@@ -19,7 +19,7 @@ let students = [
 
 let nextId = 4;
 
-// Logger middleware
+// First middleware: Request logger
 function logger(req, res, next) {
     const dateTime = new Date().toLocaleString();
 
@@ -28,11 +28,16 @@ function logger(req, res, next) {
     next();
 }
 
+// Second middleware: JSON Content-Type
+function jsonMiddleware(req, res, next) {
+    res.setHeader('Content-Type', 'application/json');
+
+    next();
+}
+
 // Send JSON response
 function sendJSON(res, statusCode, data) {
-    res.writeHead(statusCode, {
-        'Content-Type': 'application/json'
-    });
+    res.statusCode = statusCode;
 
     res.end(JSON.stringify(data, null, 2));
 }
@@ -155,11 +160,17 @@ async function handleRoutes(req, res) {
     }
 }
 
-// Apply logger middleware before handling routes
+// Apply both middleware functions
 const server = http.createServer((req, res) => {
 
     logger(req, res, () => {
-        handleRoutes(req, res);
+
+        jsonMiddleware(req, res, () => {
+
+            handleRoutes(req, res);
+
+        });
+
     });
 
 });
@@ -171,4 +182,5 @@ server.listen(PORT, () => {
     console.log('Section: IV-BSIT-C');
     console.log('Activity: N6 - Middleware and API Testing');
     console.log('Logger middleware is active.');
+    console.log('JSON Content-Type middleware is active.');
 });
